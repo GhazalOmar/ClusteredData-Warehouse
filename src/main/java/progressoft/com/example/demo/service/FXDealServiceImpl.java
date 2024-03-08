@@ -2,8 +2,8 @@ package progressoft.com.example.demo.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import progressoft.com.example.demo.entity.FXDealEntity;
 import progressoft.com.example.demo.exception.DealNotFoundException;
 import progressoft.com.example.demo.exception.DuplicateDealException;
@@ -15,6 +15,8 @@ import progressoft.com.example.demo.repository.FXDealRepository;
 import java.util.Currency;
 import java.util.List;
 
+import static org.springframework.http.HttpStatus.*;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -23,7 +25,7 @@ public class FXDealServiceImpl implements FXDealService {
     private final FXDealRepository fxDealRepository;
 
     @Override
-    public ServerResponse fetchById(long id) {
+    public ServerResponse fetchById(Long id) {
         log.info("Trying to fetch deal with ID {}", id);
 
         FXDealEntity entity = fxDealRepository.findById(id)
@@ -31,7 +33,7 @@ public class FXDealServiceImpl implements FXDealService {
 
         log.info("Deal with id {} is successfully retrieved", id);
 
-        return new ServerResponse(HttpStatus.OK.value(),
+        return new ServerResponse(OK.value(),
                 "Deal with id [" + id + "] is successfully retrieved", entity);
     }
 
@@ -43,15 +45,16 @@ public class FXDealServiceImpl implements FXDealService {
 
         if(entities.isEmpty()){
             log.info("No deals were found");
-            return new ServerResponse(HttpStatus.NO_CONTENT.value(), "No deals were found", entities);
+            return new ServerResponse(NO_CONTENT.value(), "No deals were found", entities);
         }
 
         log.info("Deals were retrieved successfully");
 
-        return new ServerResponse(HttpStatus.OK.value(), "Deals were retrieved successfully" , entities);
+        return new ServerResponse(OK.value(), "Deals were retrieved successfully" , entities);
     }
 
     @Override
+    @Transactional
     public ServerResponse saveFXDeal(FXDeal fxDeal) {
         FXDealEntity entity = new FXDealEntity().toEntity(fxDeal);
 
@@ -62,15 +65,18 @@ public class FXDealServiceImpl implements FXDealService {
         checkCurrencyValidity(fromCurrency, toCurrency);
 
         log.info("Trying to save FX Deal with ID [{}]...", fxDealId);
-        fxDealRepository.findById(fxDealId)
-                .orElseThrow(() -> new DuplicateDealException("Duplicated FX Deal with ID [" + fxDealId + "]"));
 
-        fxDealRepository.save(entity);
+        fxDealRepository.findById(fxDealId)
+                .ifPresent(e -> {
+                    throw new DuplicateDealException("Duplicated FX Deal with ID [" + fxDealId + "]");
+                });
+
+        FXDealEntity savedDeal = fxDealRepository.save(entity);
 
         log.info("Deal with ID {} successfully saved", fxDealId);
 
-        return new ServerResponse(HttpStatus.CREATED.value(),
-                "Deal with id [" + fxDealId + "] successfully saved", entity);
+        return new ServerResponse(CREATED.value(),
+                "Deal with id [" + fxDealId + "] successfully saved", savedDeal);
     }
 
     private void checkCurrencyValidity(String fromISOCurrency, String toISOCurrency) {
@@ -81,7 +87,7 @@ public class FXDealServiceImpl implements FXDealService {
             throw new InvalidCurrencyException("Invalid from ISO currency code [" + fromISOCurrency +"]");
         }
         if(!isValidCurrency(toISOCurrency)){
-            throw new InvalidCurrencyException("Invalid currency code [" + toISOCurrency +"]");
+            throw new InvalidCurrencyException("Invalid to ISO currency code [" + toISOCurrency +"]");
         }
     }
 

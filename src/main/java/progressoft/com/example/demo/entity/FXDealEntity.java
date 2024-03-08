@@ -30,11 +30,10 @@ public class FXDealEntity {
     public FXDealEntity toEntity(FXDeal fxDeal){
         return FXDealEntity.builder()
                 .amount(fxDeal.getAmount())
-                .dealTimestamp(fxDeal.getDealTimestamp())
-                .id(fxDeal.getId())
+                .dealTimestamp(LocalDateTime.parse(fxDeal.getDealTimestamp()))
+                .id(Long.parseLong(fxDeal.getId()))
                 .fromISOCurrency(fxDeal.getFromISOCurrency())
                 .toISOCurrency(fxDeal.getToISOCurrency())
                 .build();
     }
 }
-

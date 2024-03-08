@@ -1,28 +1,28 @@
 package progressoft.com.example.demo.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import javax.validation.constraints.*;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import jakarta.validation.constraints.*;
 
 @Data
 public class FXDeal {
-    @NotEmpty(message = "ID is required")
-    @Pattern(regexp = "^[a-zA-Z0-9\\-]+$", message = "ID must be numeric")
-    private long id;
+    @NotEmpty(message = "ID must not be null")
+    @Pattern(regexp = "^[0-9]*$", message = "ID must be numeric")
+    private String id;
 
-    @NotEmpty(message = "From ISO currency is required")
+    @NotBlank(message = "From ISO currency must not be null")
     private String fromISOCurrency;
 
-    @NotEmpty(message = "To ISO currency is required")
+    @NotBlank(message = "To ISO currency must not be null")
     private String toISOCurrency;
 
-    @NotEmpty(message = "Timestamp is required")
-    @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$" , message = "Timestamp must be \"yyyy-MM-ddTHH-mm-ss\"")
-    private LocalDateTime dealTimestamp;
+    @NotBlank(message = "Timestamp must not be null")
+    @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$" , message = "Timestamp must be \"yyyy-MM-ddTHH:mm:ss\"")
+    private String dealTimestamp;
 
-    @NotNull(message = "Amount is required")
-    @DecimalMin(value = "0.0", message = "Deal amount must be greater than 0")
+    @NotNull(message = "Amount must not be null")
+    @DecimalMin(value = "0.1", message = "Deal amount must be greater than 0")
     private BigDecimal amount;
 }

@@ -1,0 +1,23 @@
+version: '3'
+services:
+  mysqldb:
+    image: mysql
+    restart: always
+    container_name: mysqldb
+    environment:
+      MYSQL_ROOT_PASSWORD: g*1234
+      MYSQL_DATABASE: data_warehouse_db
+      MYSQL_ROOT_USERNAME: root
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_ROOT_USERNAME --password=$$MYSQL_ROOT_PASSWORD
+
+  data-warehouse:
+    build: .
+    restart: always
+    container_name: data-warehouse
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysqldb
